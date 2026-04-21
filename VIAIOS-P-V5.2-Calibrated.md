@@ -734,7 +734,7 @@ def orchestrate(input_data):
 □ 市值、企业价值（EV）
 □ 主要估值倍数（P/E, P/B, EV/EBITDA, P/S, P/FCF）
 □ 分析师一致预期（若可获取）：营收、EPS、EBITDA
-□ 【V5.2 新增】一致预期锚定校正：[V5.2 锚定校正] consensus_adjusted = consensus_raw × 0.9
+□ 【V5.2 新增】一致预期锚定校正：[V5.2 锚定校正] consensus_adjusted = consensus_raw × 0.9（依据：卖方长期高估盈利约8-12%，默认取中值10%，后续按市场/行业回测再校准）
 □ 内部人士交易记录（最近12个月）
 □ 机构持股变化（最近4个季度）
 ```
