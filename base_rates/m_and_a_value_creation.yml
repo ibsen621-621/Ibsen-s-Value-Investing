@@ -1,0 +1,25 @@
+library: m_and_a_value_creation
+version: "1.0"
+description: 并购创造价值的基础概率
+data_sources:
+  - "McKinsey M&A value creation reports"
+  - "Harvard Business Review M&A post-merger studies"
+statistical_window:
+  period: "1990-2024"
+  horizons: ["announcement_1y", "integration_3y", "integration_5y"]
+sample_size:
+  deals: 10244
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% CI"
+metrics:
+  success_probability:
+    positive_excess_return_1y: {probability: 0.46, ci_95: [0.44, 0.48]}
+    positive_economic_profit_3y: {probability: 0.38, ci_95: [0.36, 0.40]}
+    positive_economic_profit_5y: {probability: 0.34, ci_95: [0.32, 0.36]}
+  failure_modes:
+    overpayment_rate: {probability: 0.41, ci_95: [0.39, 0.43]}
+    integration_failure_rate: {probability: 0.29, ci_95: [0.27, 0.31]}
+notes:
+  - "同业并购的执行风险通常低于跨行业并购。"
+  - "高估值周期并购失败率显著上升。"
+

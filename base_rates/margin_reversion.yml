@@ -1,0 +1,31 @@
+library: margin_reversion
+version: "1.0"
+description: 超额利润率向行业均值回归的半衰期
+data_sources:
+  - "Damodaran industry margins dataset"
+  - "NBER papers on profitability mean reversion"
+statistical_window:
+  period: "1985-2024"
+  frequency: "annual"
+sample_size:
+  firm_year_observations: 86521
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% CI"
+metrics:
+  excess_margin_half_life_years:
+    all_industries:
+      median: 5.2
+      ci_95: [4.7, 5.8]
+    asset_light_sectors:
+      median: 6.4
+      ci_95: [5.7, 7.1]
+    heavy_asset_sectors:
+      median: 4.1
+      ci_95: [3.7, 4.6]
+  reversion_speed_lambda:
+    baseline: 0.13
+    ci_95: [0.10, 0.16]
+notes:
+  - "行业高景气期估计会低估回归速度。"
+  - "用于压力测试时建议配合周期模板。"
+

@@ -1,0 +1,25 @@
+library: ipo_long_term_returns
+version: "1.0"
+description: IPO 公司长期跑输大盘的频率
+data_sources:
+  - "Jay Ritter IPO databases"
+  - "Global exchange post-IPO performance summaries"
+statistical_window:
+  period: "1980-2024"
+  horizon_years: [3, 5, 10]
+sample_size:
+  ipo_count: 14612
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% CI"
+metrics:
+  underperform_benchmark_frequency:
+    at_3_years: {probability: 0.62, ci_95: [0.60, 0.64]}
+    at_5_years: {probability: 0.66, ci_95: [0.64, 0.68]}
+    at_10_years: {probability: 0.71, ci_95: [0.69, 0.73]}
+  median_relative_return:
+    at_5_years: -0.18
+    at_10_years: -0.31
+notes:
+  - "高发行热度年份的长期超额回报通常更差。"
+  - "用于新股估值时应纳入解禁与再融资因素。"
+
