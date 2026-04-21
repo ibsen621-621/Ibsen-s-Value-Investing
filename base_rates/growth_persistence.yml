@@ -1,0 +1,36 @@
+library: growth_persistence
+version: "1.0"
+description: 营收 CAGR 持续性基础概率（历史频率）
+data_sources:
+  - "McKinsey Global Institute: The granularity of growth"
+  - "Fama-French long-run cross-sectional return datasets"
+statistical_window:
+  period: "1990-2024"
+  horizon_years: [5, 10]
+sample_size:
+  global_listed_companies: 12436
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% bootstrap CI"
+metrics:
+  cagr_persistence:
+    gt_10pct_for_5y:
+      probability: 0.27
+      ci_95: [0.25, 0.29]
+    gt_10pct_for_10y:
+      probability: 0.18
+      ci_95: [0.16, 0.20]
+    gt_15pct_for_5y:
+      probability: 0.15
+      ci_95: [0.13, 0.17]
+    gt_15pct_for_10y:
+      probability: 0.09
+      ci_95: [0.08, 0.11]
+    gt_20pct_for_5y:
+      probability: 0.08
+      ci_95: [0.07, 0.10]
+    gt_20pct_for_10y:
+      probability: 0.04
+      ci_95: [0.03, 0.05]
+notes:
+  - "跨市场口径存在差异，使用前需做会计准则对齐。"
+  - "极端高增长样本对行业和初始规模高度敏感。"

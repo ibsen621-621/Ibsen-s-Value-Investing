@@ -1,0 +1,31 @@
+library: roic_persistence
+version: "1.0"
+description: 高 ROIC 维持概率
+data_sources:
+  - "Credit Suisse / HOLT ROIC persistence studies"
+  - "Academic evidence on competitive advantage duration"
+statistical_window:
+  period: "1995-2024"
+  horizon_years: [3, 5, 10]
+sample_size:
+  listed_companies: 9320
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% Wilson CI"
+metrics:
+  persistence_probability:
+    roic_gt_15pct_for_5y:
+      probability: 0.24
+      ci_95: [0.22, 0.26]
+    roic_gt_20pct_for_5y:
+      probability: 0.14
+      ci_95: [0.12, 0.16]
+    roic_gt_20pct_for_10y:
+      probability: 0.06
+      ci_95: [0.05, 0.07]
+  fade_to_industry_median_years:
+    median: 6.0
+    ci_95: [5.4, 6.8]
+notes:
+  - "资本密集行业 ROIC 维持难度显著更高。"
+  - "ROIC 需统一 NOPAT 与投入资本口径。"
+

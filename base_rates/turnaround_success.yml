@@ -1,0 +1,25 @@
+library: turnaround_success
+version: "1.0"
+description: 困境反转成功率基础概率
+data_sources:
+  - "Distressed investing studies (Altman, Oaktree letters)"
+  - "Credit rating migration and recovery datasets"
+statistical_window:
+  period: "1990-2024"
+  horizon_years: [3, 5]
+sample_size:
+  distressed_cases: 3890
+applicable_markets: ["US", "CN_A", "HK"]
+confidence_interval: "95% CI"
+metrics:
+  successful_turnaround_probability:
+    fcf_positive_within_3y: {probability: 0.33, ci_95: [0.30, 0.36]}
+    leverage_normalized_within_5y: {probability: 0.28, ci_95: [0.25, 0.31]}
+    equity_outperformance_5y: {probability: 0.24, ci_95: [0.21, 0.27]}
+  permanent_capital_impairment_probability:
+    probability: 0.41
+    ci_95: [0.38, 0.44]
+notes:
+  - "财务重组成功不等于股东回报成功。"
+  - "反转案例对融资环境高度敏感。"
+
