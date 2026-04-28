@@ -1,3 +1,54 @@
+## V5.3-Damodaran-Calibrated (2026-04-28)
+
+### 新增文件
+- `VIAIOS-P-V5.3-Damodaran-Calibrated.md` — 主文档（基于 V5.2 全量升级，可直接作为 Gemini Gem 系统提示词）
+- `agents/agent_9_damodaran_engine.md` — Agent-9 达莫达兰引擎（7大工具执行规程）
+- `base_rates/bond_implied_default_rates.yml` — 债券隐含违约率（按评级/行业/久期）
+- `base_rates/implied_erp_history.yml` — 月度隐含股权风险溢价历史
+- `base_rates/sales_to_capital_by_industry.yml` — 行业销售资本比基准
+- `base_rates/cyclical_midcycle_margins.yml` — 周期行业中周期常态利润率
+- `base_rates/sovereign_cds_snapshot.yml` — 主要国家主权CDS利差快照
+- `deploy/gemini_gems_v5.3.md` — Gemini Gems 部署清单（完整集/最小集两种方案）
+- `tests/v5_3_damodaran_cases.md` — V5.3 红队测试（SpaceX / LVS / Exxon 三场景）
+
+### 新增模块（主文档内）
+- **§0 SYSTEM IDENTITY** — 版本标识更新至 V5.3 Damodaran-Calibrated
+- **§3 INTENT ROUTER** — 新增 `MODE_HARD_TO_VALUE`（独角兽/困境/战时/早期颠覆者）
+- **§5.2.8 CYCLICAL 强制指令** — VR-04：禁止 TTM 利润率做 DCF，强制执行 mid-cycle 常态化
+- **§8.4 Restated Financials** — R&D/获客成本资本化，双口径 ROIC 强制披露
+- **§10.5 Narrative Decomposition** — SOTP 强制路由（多业务线公司），VR-02
+- **§11.5 Monte Carlo Valuation Distribution** — 取代三点情景，P10-P90 分布，VR-01
+- **§11.6 Expansion Option Module** — 远期低概率高赔率叙事独立计量
+- **§11.7 Pricing Gymnastics Detector** — 卖方研报三类定价体操检测，VR-05
+- **§12.3 Distress-Adjusted Valuation** — 双轨期望值模型，P_distress 从债市反推，VR-03
+- **§14.3 Dynamic Risk Calibration Engine** — Implied ERP + 主权 CDS + 黑天鹅触发机制
+- **§15.1 一票否决规则集中归档** — VR-01～VR-05 + V5.2 已有否决项完整档案
+- **§Gemini Gems 部署指引** — 两种部署方案（完整集9附件/最小集4附件），总附件≤10
+
+### 新增硬规则
+- **VR-01**：当前股价 > P75（蒙卡估值分布）→ 一票否决 BUY/STRONG BUY
+- **VR-02**：多业务线公司未执行 SOTP → 估值结论 INVALID
+- **VR-03**：高负债公司（净负债/EBITDA > 4 或 ICR < 3）未执行双轨分离 → INVALID
+- **VR-04**：CYCLICAL 行业用 TTM 利润率做 DCF → INVALID，强制常态化
+- **VR-05**：相对估值对标池未披露筛选标准 → 标记 "Pricing Gymnastics"，不得作为唯一依据
+
+### 升级 Agent 架构
+- **Agent-9 Damodaran Engine**（新增）：隶属 Layer 4（与 Agent-6 并行）
+  - 工具1：SOTP Narrative Decomposition
+  - 工具2：Monte Carlo Valuation Distribution
+  - 工具3：Expansion Option Module
+  - 工具4：Distress-Adjusted Dual-Track
+  - 工具5：Dynamic ERP & CRP Calibration
+  - 工具6：Restated Financials
+  - 工具7：Cyclical Mid-Cycle Normalization
+- **Agent-9 → Agent-8 闭环**：Agent-9 输出分布 → Agent-8 后验校准
+
+### 不变项（V5.2 完整保留）
+- V5.2 全部模块、硬规则、Agent 架构均完整保留
+- 所有 base_rates/ V5.2 YAML 文件（6个）保持不变
+- agents/agent_8_calibration_auditor.md 保持不变
+- 所有 V4.x 和 V5.0 文档不修改
+
 # CHANGELOG
 
 ## V5.2-Calibrated (2026-04-21)

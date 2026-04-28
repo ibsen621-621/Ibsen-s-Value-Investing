@@ -1,0 +1,244 @@
+# schema:
+#   library: sovereign_cds_snapshot
+#   version: string
+#   description: string
+#   data_sources: list[string]
+#   last_updated: date
+#   usage_in_v5_3: string
+#   snapshot_date: date
+#   countries: list[{country, region, cds_5y_bps, country_risk_premium_pct, notes, wartime_flag}]
+
+# source: Bloomberg / Markit CDS Data / S&P Sovereign Ratings / Damodaran Country Risk Premium
+# last_updated: "2026-04"
+# usage_in_v5_3: >
+#   §14.3 Dynamic Risk Calibration Engine (b) — 主权 CDS 利差替代国家信用评级，
+#   用于跨国资产的国家风险溢价（Country Risk Premium, CRP）实时更新。
+#   危机/战争期间主权 CDS 飙升速度远快于评级机构下调，是更及时的实时信号。
+#   Agent-9 在跨国估值中强制调用本表代替静态 CRP 假设。
+# example_only: true
+
+library: sovereign_cds_snapshot
+version: "1.0"
+description: >
+  主要国家/地区主权信用违约互换（Sovereign CDS）5年期利差快照，
+  用于替代滞后的主权信用评级，实时更新跨国资产估值中的国家风险溢价（CRP）。
+  CRP = 主权CDS利差 / (1 - Recovery Rate) × λ（调整系数，默认0.6-0.7）
+  或简化公式：CRP ≈ Sovereign CDS Spread × Equity_to_Bond_Volatility_Ratio（约1.5-2x）
+
+data_sources:
+  - "Bloomberg Sovereign CDS Composite — 5Y USD CDS"
+  - "Markit/DTCC — Sovereign CDS Net Notional"
+  - "Damodaran Country Default Spreads and Risk Premiums (damodaran.com)"
+  - "World Bank — Political Stability Index"
+
+snapshot_date: "2026-04-01"  # example_only: true
+
+# ─────────────────────────────────────────────────────────────────
+# 主权 CDS 快照（example_only: true）
+# ─────────────────────────────────────────────────────────────────
+countries:
+
+  # ── 低风险基准（Developed Markets）────────────────────────────
+  - country: "United States"
+    region: "North America"
+    cds_5y_bps: 35
+    sovereign_rating_sp: "AA+"
+    country_risk_premium_pct: 0.0   # 基准（零风险溢价）
+    notes: "美国为全球基准，CRP=0"
+    wartime_flag: false
+
+  - country: "Germany"
+    region: "Europe"
+    cds_5y_bps: 18
+    sovereign_rating_sp: "AAA"
+    country_risk_premium_pct: 0.0
+    notes: "欧元区最低风险"
+    wartime_flag: false
+
+  - country: "United Kingdom"
+    region: "Europe"
+    cds_5y_bps: 30
+    sovereign_rating_sp: "AA"
+    country_risk_premium_pct: 0.1
+    notes: null
+    wartime_flag: false
+
+  - country: "Japan"
+    region: "Asia Pacific"
+    cds_5y_bps: 28
+    sovereign_rating_sp: "A+"
+    country_risk_premium_pct: 0.1
+    notes: "高债务但内部融资，CDS偏低"
+    wartime_flag: false
+
+  # ── 中等风险（Emerging Markets）──────────────────────────────
+  - country: "China (PRC)"
+    region: "Asia Pacific"
+    cds_5y_bps: 72
+    sovereign_rating_sp: "A+"
+    country_risk_premium_pct: 0.7
+    notes: "地缘政治溢价（台海、科技制裁）已部分反映于CDS；A股WACC须叠加本CRP"
+    wartime_flag: false
+
+  - country: "India"
+    region: "Asia Pacific"
+    cds_5y_bps: 85
+    sovereign_rating_sp: "BBB-"
+    country_risk_premium_pct: 1.0
+    notes: null
+    wartime_flag: false
+
+  - country: "Brazil"
+    region: "Latin America"
+    cds_5y_bps: 175
+    sovereign_rating_sp: "BB"
+    country_risk_premium_pct: 2.8
+    notes: "政治周期性波动放大CDS利差"
+    wartime_flag: false
+
+  - country: "Mexico"
+    region: "Latin America"
+    cds_5y_bps: 130
+    sovereign_rating_sp: "BBB"
+    country_risk_premium_pct: 1.8
+    notes: null
+    wartime_flag: false
+
+  - country: "Saudi Arabia"
+    region: "Middle East"
+    cds_5y_bps: 68
+    sovereign_rating_sp: "A"
+    country_risk_premium_pct: 0.8
+    notes: "2026-03 中东战争背景下CDS从45bps上行至68bps；石油收入支撑信用"
+    wartime_flag: true
+
+  - country: "Israel"
+    region: "Middle East"
+    cds_5y_bps: 145
+    sovereign_rating_sp: "A+"
+    country_risk_premium_pct: 2.0
+    notes: >
+      2026-03 战时高位。CDS从战前约80bps飙升至145bps（+65bps）。
+      跨国资产包含以色列业务时，CRP须用当期CDS而非评级均值。
+      示例：以色列科技企业WACC应叠加CRP≈2.0%。
+    wartime_flag: true
+    wartime_detail:
+      pre_war_cds_bps: 78
+      peak_war_cds_bps: 165
+      current_cds_bps: 145
+      event: "2026年3月中东军事冲突升级"
+
+  - country: "Iraq"
+    region: "Middle East"
+    cds_5y_bps: 480
+    sovereign_rating_sp: "B-"
+    country_risk_premium_pct: 6.5
+    notes: >
+      战时极高位。直接交战区，CDS急剧上升；
+      任何在伊拉克有实质业务的跨国公司须单独测算Iraq CRP。
+    wartime_flag: true
+    wartime_detail:
+      pre_war_cds_bps: 290
+      peak_war_cds_bps: 520
+      current_cds_bps: 480
+      event: "2026年3月中东战争主战场区域"
+
+  - country: "UAE (Dubai/Abu Dhabi)"
+    region: "Middle East"
+    cds_5y_bps: 55
+    sovereign_rating_sp: "AA-"
+    country_risk_premium_pct: 0.5
+    notes: >
+      中东战争间接受益（避险资金流入迪拜）；CDS仅微升。
+      LVS/Wynn类博彩企业若在UAE有业务，CRP偏低。
+    wartime_flag: false
+
+  - country: "Russia"
+    region: "Eastern Europe"
+    cds_5y_bps: 9999   # 实质上已无可交易CDS
+    sovereign_rating_sp: "SD"   # 选择性违约
+    country_risk_premium_pct: 20.0
+    notes: >
+      俄乌战争后西方制裁，CDS市场实质停止。
+      估值中通常设定 CRP = 15-25%（极度不确定）或直接标注"不可估值区域"。
+    wartime_flag: true
+
+  - country: "Ukraine"
+    region: "Eastern Europe"
+    cds_5y_bps: 2800
+    sovereign_rating_sp: "CC"
+    country_risk_premium_pct: 22.0
+    notes: "战时CDS飙升；重建潜力与违约风险并存"
+    wartime_flag: true
+
+  # ── 其他重要新兴市场 ──────────────────────────────────────────
+  - country: "South Korea"
+    region: "Asia Pacific"
+    cds_5y_bps: 38
+    sovereign_rating_sp: "AA"
+    country_risk_premium_pct: 0.3
+    notes: "地缘溢价（半岛局势）导致CDS略高于评级隐含水平"
+    wartime_flag: false
+
+  - country: "Vietnam"
+    region: "Asia Pacific"
+    cds_5y_bps: 85
+    sovereign_rating_sp: "BB+"
+    country_risk_premium_pct: 1.2
+    notes: "制造业转移受益，CDS近年持续下行"
+    wartime_flag: false
+
+  - country: "Turkey"
+    region: "Emerging Europe"
+    cds_5y_bps: 280
+    sovereign_rating_sp: "B+"
+    country_risk_premium_pct: 4.2
+    notes: "高通胀+货币风险+地缘位置"
+    wartime_flag: false
+
+# ─────────────────────────────────────────────────────────────────
+# CRP 计算公式（V5.3 §14.3 使用）
+# ─────────────────────────────────────────────────────────────────
+crp_calculation_formulas:
+  method_1_damodaran:
+    description: "Damodaran方法：CRP = 主权CDS利差 × 股票/债券波动比"
+    formula: >
+      CRP = (Sovereign_CDS_Spread_bps / 10000) × (σ_equity / σ_bond)
+      σ_equity / σ_bond 经验值：新兴市场约 1.5-2.0x；发达市场约 1.2-1.5x
+    example:
+      # example_only: true
+      country: "以色列（战时，示例）"
+      sovereign_cds_bps: 145
+      equity_to_bond_vol_ratio: 1.6
+      crp_pct: "1.45% × 1.6 = 2.32%（≈2.3%）"
+
+  method_2_simplified:
+    description: "简化方法：CRP ≈ Sovereign Default Spread（直接使用CDS利差）"
+    formula: "CRP ≈ Sovereign_CDS_Spread_bps / 10000"
+    note: "偏保守，适合快速估算；精确分析用方法1"
+
+  wacc_integration:
+    description: "在WACC中的应用"
+    formula: >
+      WACC_adjusted = WACC_domestic + CRP_country
+      即：海外业务的折现率叠加对应国家CRP
+
+# ─────────────────────────────────────────────────────────────────
+# V5.3 使用规则
+# ─────────────────────────────────────────────────────────────────
+v5_3_usage_rules:
+  forbidden_fallback: >
+    禁止在黑天鹅事件（战争/危机）爆发后继续使用评级机构的静态国家评级来估算CRP。
+    评级机构下调通常滞后实际事件 3-12 个月；CDS市场是实时的。
+    必须使用本表当期 CDS 数据或更新的市场数据。
+  mandatory_triggers:
+    - "跨国资产估值，海外收入 > 30%（触发 C-014）"
+    - "黑天鹅事件（战争/流动性危机）后 14 天内（触发 M-013）"
+    - "涉及中东/东欧/新兴市场重大政治风险国家"
+  update_frequency: >
+    本文件建议每季度更新一次。危机期间（CDS单月变动 > 50bps）须即时更新。
+
+notes:
+  - "示例数据仅代表格式结构，部署时须替换为 Bloomberg/Markit 当期真实数据。"
+  - "与 implied_erp_history.yml 组合使用，可构建完整的动态 ERP + CRP 校准体系。"
+  - "V5.3 Agent-9 的 Dynamic Risk Calibration Engine 将自动调用本快照中最新数据。"
