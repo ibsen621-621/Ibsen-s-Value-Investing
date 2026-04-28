@@ -1,0 +1,147 @@
+# schema:
+#   library: implied_erp_history
+#   version: string
+#   description: string
+#   data_sources: list[string]
+#   last_updated: date
+#   usage_in_v5_3: string
+#   methodology: string
+#   monthly_series: list[{date, sp500_level, rf_rate_10y, implied_erp, event_tag}]
+
+# source: Damodaran Online (pages.stern.nyu.edu/~adamodar) / Federal Reserve H.15 / Bloomberg
+# last_updated: "2026-04"
+# usage_in_v5_3: >
+#   §14.3 Dynamic Risk Calibration Engine 强制调用。
+#   黑天鹅事件（战争/流动性冲击）后禁止使用历史均值 ERP，须取当月最新值。
+#   Agent-9 在 WACC 计算中使用本表最新 implied_erp 替代静态假设。
+# example_only: true
+
+library: implied_erp_history
+version: "1.0"
+description: >
+  月度隐含股权风险溢价（Implied Equity Risk Premium）历史序列。
+  通过 S&P 500 指数当期点位 + 无风险利率 + 预期现金流反推市场内部收益率（IRR），
+  再减去无风险利率得出 Implied ERP。
+  用于 §14.3 动态风险校准引擎，替代历史算术均值 ERP（约 4.5-5.5%）。
+
+data_sources:
+  - "Damodaran Online — Implied ERP Monthly Updates (damodaran.com)"
+  - "Federal Reserve H.15 Selected Interest Rates — 10-Year Treasury Constant Maturity"
+  - "FactSet/Bloomberg Consensus Forward Earnings Estimates for S&P 500"
+
+methodology: >
+  方法：修正 Gordon 增长模型（Two-Stage Implied ERP）
+    Stage 1：T+1 至 T+5 年，使用卖方一致预期 EPS 增长率和股息/回购预测
+    Stage 2：T+6 年起，使用名义 GDP 长期增长率（约 2.5-3%）
+    Implied ERP = IRR(S&P 500 现值, 未来现金流序列) - 当期无风险利率
+  注：ERP 本质反映"当前市场对风险的定价"，高波动期（战争/危机）ERP 会急剧上升。
+
+# ─────────────────────────────────────────────────────────────────
+# 月度历史序列（示例数据，example_only: true）
+# ─────────────────────────────────────────────────────────────────
+monthly_series:
+  # example_only: true — 数值为示例，不代表真实历史数据
+  - date: "2024-01"
+    sp500_level: 4742
+    rf_rate_10y_pct: 3.97
+    implied_erp_pct: 4.62
+    event_tag: null
+
+  - date: "2024-06"
+    sp500_level: 5460
+    rf_rate_10y_pct: 4.36
+    implied_erp_pct: 4.28
+    event_tag: null
+
+  - date: "2024-12"
+    sp500_level: 5881
+    rf_rate_10y_pct: 4.58
+    implied_erp_pct: 4.12
+    event_tag: null
+
+  - date: "2025-06"
+    sp500_level: 5570
+    rf_rate_10y_pct: 4.50
+    implied_erp_pct: 4.38
+    event_tag: null
+
+  - date: "2025-12"
+    sp500_level: 5780
+    rf_rate_10y_pct: 4.62
+    implied_erp_pct: 4.31
+    event_tag: null
+
+  - date: "2026-02"
+    sp500_level: 5650
+    rf_rate_10y_pct: 4.48
+    implied_erp_pct: 4.37
+    event_tag: null
+
+  # ★ 关键数据点：2026-03 中东战争爆发
+  - date: "2026-03"
+    sp500_level: 5290
+    rf_rate_10y_pct: 4.35
+    implied_erp_pct: 4.77
+    event_tag: "中东战争爆发 — ERP单月跳升40bp；V5.3硬规则M-013触发，WACC须重算"
+    notes: >
+      2026年3月中东局势急剧恶化，S&P500单月下跌约6.4%，
+      市场隐含ERP从4.37%飙升至4.77%（+40bp），
+      精准反映市场真实恐慌定价。
+      按照 §14.3(c)：黑天鹅事件 → 自动触发ERP重算，禁止沿用2026-02数值。
+
+  - date: "2026-04"
+    sp500_level: 5390
+    rf_rate_10y_pct: 4.40
+    implied_erp_pct: 4.65
+    event_tag: "地缘局势略有缓和，但ERP仍高于战前水平"
+
+# ─────────────────────────────────────────────────────────────────
+# 历史统计摘要（用于背景对照）
+# ─────────────────────────────────────────────────────────────────
+historical_summary:
+  # example_only: true
+  period_1962_to_2023:
+    arithmetic_mean_pct: 4.60
+    geometric_mean_pct: 3.80
+    median_pct: 4.40
+    std_dev_pct: 1.60
+    min_pct: 2.10        # 互联网泡沫顶峰低点
+    max_pct: 10.60       # 2008年10月金融危机顶峰
+
+  crisis_erp_spikes:
+    # example_only: true
+    - event: "2008-10 全球金融危机"
+      erp_peak_pct: 10.60
+      duration_months_above_6pct: 8
+    - event: "2020-03 COVID-19"
+      erp_peak_pct: 7.80
+      duration_months_above_6pct: 3
+    - event: "2022-09 美联储激进加息"
+      erp_peak_pct: 5.90
+      duration_months_above_5pct: 6
+    - event: "2026-03 中东战争（示例）"
+      erp_peak_pct: 4.77
+      duration_months_above_4_5pct: "待观察"
+
+# ─────────────────────────────────────────────────────────────────
+# V5.3 使用规则
+# ─────────────────────────────────────────────────────────────────
+v5_3_usage_rules:
+  mandatory_refresh_triggers:
+    - "重大宏观事件后14天内（触发 M-013）"
+    - "ERP 单月跳升 > 30bp"
+    - "S&P 500 单月下跌 > 5%"
+    - "地缘军事冲突升级"
+  forbidden_fallback: >
+    禁止在上述触发条件满足后继续使用历史均值 ERP（4.6% 或类似静态值）。
+    必须调用本表最新 implied_erp 重新计算 WACC。
+  cross_market_notes:
+    a_share: >
+      A股估值使用中国10年期国债收益率作为无风险利率，
+      A股ERP建议参考 A股本地隐含ERP（约6-8%，高于美股约1.5-3pp），
+      跨国资产还需叠加 sovereign_cds_snapshot.yml 的国家风险溢价。
+
+notes:
+  - "本表示例数值为格式占位，实际部署时须替换为达莫达兰网站最新月度数据。"
+  - "V5.3 Agent-9 在调用 WACC 计算时，将自动引用本表最新 implied_erp。"
+  - "与 sovereign_cds_snapshot.yml 组合使用，可实现跨国资产的实时动态 ERP 校准。"

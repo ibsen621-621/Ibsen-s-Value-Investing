@@ -1,0 +1,157 @@
+# schema:
+#   library: bond_implied_default_rates
+#   version: string
+#   description: string
+#   data_sources: list[string]
+#   last_updated: date
+#   usage_in_v5_3: string
+#   rating_buckets: list[{rating, spread_bps, cumulative_default_5y, cumulative_default_10y, recovery_rate}]
+#   sector_adjustments: map[sector, spread_adj_bps]
+
+# source: Moody's Annual Default Study / S&P Global Default Statistics / BIS Working Papers
+# last_updated: "2026-03"
+# usage_in_v5_3: >
+#   §12.3 Distress-Adjusted Valuation — 用于从公司垃圾债/CDS利差反推隐含违约概率(P_distress)。
+#   Agent-9 Damodaran Engine 在 net_debt/EBITDA > 4 或利息保障倍数 < 3 时强制调用。
+#   禁止主观估算违约率，必须锚定本表对应信用档位的市场隐含违约率。
+# example_only: true
+
+library: bond_implied_default_rates
+version: "1.0"
+description: >
+  按信用评级(AAA→D)、行业及久期分类的债券隐含违约率，
+  用于 §12.3 双轨分离法(Distress-Adjusted Valuation)中的 P_distress 参数反推。
+  数据为历史统计均值，实际分析时须与当期 CDS 利差校准。
+
+data_sources:
+  - "Moody's Annual Default Study (2025)"
+  - "S&P Global Ratings Default, Transition, and Recovery (2025)"
+  - "BIS Quarterly Review — credit spreads and implied defaults"
+  - "Federal Reserve FRED — ICE BofA Option-Adjusted Spreads"
+
+# ─────────────────────────────────────────────────────────────────
+# 投资级（Investment Grade）违约率基准
+# ─────────────────────────────────────────────────────────────────
+investment_grade_default_rates:
+  # example_only: true — 数值为统计均值，仅作示例
+  - rating: "AAA"
+    spread_bps_typical: 30
+    cumulative_default_1y: 0.00
+    cumulative_default_5y: 0.01
+    cumulative_default_10y: 0.05
+    recovery_rate_pct: 65.0
+    ci_95_5y: [0.00, 0.03]
+
+  - rating: "AA"
+    spread_bps_typical: 55
+    cumulative_default_1y: 0.01
+    cumulative_default_5y: 0.04
+    cumulative_default_10y: 0.15
+    recovery_rate_pct: 62.0
+    ci_95_5y: [0.02, 0.08]
+
+  - rating: "A"
+    spread_bps_typical: 90
+    cumulative_default_1y: 0.03
+    cumulative_default_5y: 0.14
+    cumulative_default_10y: 0.43
+    recovery_rate_pct: 58.0
+    ci_95_5y: [0.08, 0.22]
+
+  - rating: "BBB"
+    spread_bps_typical: 180
+    cumulative_default_1y: 0.13
+    cumulative_default_5y: 0.72
+    cumulative_default_10y: 1.98
+    recovery_rate_pct: 53.0
+    ci_95_5y: [0.51, 0.97]
+
+# ─────────────────────────────────────────────────────────────────
+# 投机级（High Yield / Junk）违约率基准
+# ─────────────────────────────────────────────────────────────────
+high_yield_default_rates:
+  # example_only: true
+  - rating: "BB"
+    spread_bps_typical: 320
+    cumulative_default_1y: 0.56
+    cumulative_default_5y: 6.40
+    cumulative_default_10y: 14.20
+    recovery_rate_pct: 46.0
+    ci_95_5y: [5.10, 7.80]
+
+  - rating: "B"
+    spread_bps_typical: 600
+    cumulative_default_1y: 2.30
+    cumulative_default_5y: 16.80
+    cumulative_default_10y: 28.60
+    recovery_rate_pct: 38.0
+    ci_95_5y: [14.20, 19.50]
+
+  - rating: "CCC"
+    spread_bps_typical: 1200
+    cumulative_default_1y: 9.50
+    cumulative_default_5y: 35.70
+    cumulative_default_10y: 50.20
+    recovery_rate_pct: 28.0
+    ci_95_5y: [31.00, 41.00]
+
+  - rating: "CC"
+    spread_bps_typical: 2500
+    cumulative_default_1y: 21.00
+    cumulative_default_5y: 55.00
+    cumulative_default_10y: 68.00
+    recovery_rate_pct: 20.0
+    ci_95_5y: [48.00, 62.00]
+
+  - rating: "C/D"
+    spread_bps_typical: 5000
+    cumulative_default_1y: 50.00
+    cumulative_default_5y: 80.00
+    cumulative_default_10y: 90.00
+    recovery_rate_pct: 10.0
+    ci_95_5y: [72.00, 87.00]
+
+# ─────────────────────────────────────────────────────────────────
+# 行业利差调整（叠加于评级基准之上，单位 bps）
+# ─────────────────────────────────────────────────────────────────
+sector_spread_adjustments:
+  # example_only: true
+  technology_software: -20       # 资产轻、现金流强，风险低于同级均值
+  technology_hardware: +10
+  energy_oil_gas: +40            # 大宗商品周期放大违约率
+  real_estate_developer: +80     # 流动性风险高，尤其新兴市场
+  real_estate_reit: +10
+  financials_bank: -15           # 监管支持 + 存款基础
+  financials_insurance: -10
+  consumer_discretionary: +20
+  consumer_staples: -15
+  healthcare: -10
+  utilities: -25                 # 监管保护，现金流稳定
+  telecom: +5
+  industrials_cyclical: +30
+  mining_metals: +50             # 大宗商品双周期暴露
+
+# ─────────────────────────────────────────────────────────────────
+# P_distress 反推公式（V5.3 §12.3 使用）
+# ─────────────────────────────────────────────────────────────────
+distress_probability_formula:
+  description: >
+    从垃圾债交易利差反推债券隐含违约概率 P_distress：
+      P_distress ≈ Spread_bond / (1 - Recovery_Rate)
+    若公司债未上市交易，则使用 CDS 5年期保费代替 Spread_bond。
+    计算后与本表对应评级区间做合理性校验（偏差 > 10pp 须说明原因）。
+  example_calculation:
+    description: "示例（仅供格式参考）"
+    # example_only: true
+    company: "[假设公司 XYZ]"
+    bond_spread_bps: 850
+    recovery_rate_assumed: 0.40
+    implied_p_distress_annual: "8.50% / (1 - 0.40) = 14.2%"
+    implied_p_distress_5y: "约 51%（按 1-(1-0.142)^5 复利）"
+    cross_check_with_table: "落在 B 级别 5年 16.8% 附近，合理"
+
+notes:
+  - "实际分析时须用目标公司当前 CDS 或债券利差，而非评级均值。"
+  - "V5.3 硬规则 VR-03：净负债/EBITDA > 4 或 利息保障倍数 < 3 时，必须执行双轨分离，禁止仅靠调高 WACC 处理。"
+  - "P_distress 须从市场数据反推，禁止主观估算（MANDATORY）。"
+  - "跨国高收益债还需叠加 sovereign_cds_snapshot.yml 的国家风险溢价。"

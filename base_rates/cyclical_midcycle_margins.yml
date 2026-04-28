@@ -1,0 +1,192 @@
+# schema:
+#   library: cyclical_midcycle_margins
+#   version: string
+#   description: string
+#   data_sources: list[string]
+#   last_updated: date
+#   usage_in_v5_3: string
+#   industries: list[{industry, cycle_window_years, midcycle_ebit_margin, notes}]
+
+# source: Damodaran Industry Margins / Bloomberg Sector Data / IEA / Wood Mackenzie
+# last_updated: "2026-01"
+# usage_in_v5_3: >
+#   §6 Industry Router CYCLICAL 模板 / §14.3 周期股常态化。
+#   硬规则 VR-04：周期股禁止使用 TTM 利润率做 DCF；
+#   必须使用本表对应行业的跨周期（7-10年）平均营业利润率作为"常态化利润率"基准。
+#   Agent-9 在 CYCLICAL 模板下强制调用本表。
+# example_only: true
+
+library: cyclical_midcycle_margins
+version: "1.0"
+description: >
+  按周期行业分类的 7-10 年滚动中周期平均营业利润率（Mid-Cycle EBIT Margin）。
+  用于估值时的"利润率常态化"处理，避免在景气顶峰用峰值利润率、
+  或在景气低谷用谷底利润率做 DCF 而导致系统性高估/低估。
+  V5.3 硬规则 VR-04：CYCLICAL 模板强制使用本表中值，禁止直接使用 TTM 利润率。
+
+data_sources:
+  - "Damodaran Online — Industry Margins Dataset (Updated Annually, Jan 2026)"
+  - "IEA World Energy Outlook — Upstream Cost Benchmarks"
+  - "Wood Mackenzie — Mining & Metals Cost Curves"
+  - "Clarkson Research — Shipping Cycle Data"
+  - "Bloomberg Intelligence — Sector Profitability Trends"
+
+# ─────────────────────────────────────────────────────────────────
+# 周期行业中周期利润率参考（example_only: true）
+# ─────────────────────────────────────────────────────────────────
+industries:
+  # example_only: true — 数值为统计均值，代表一个完整周期的中枢
+
+  # ── 能源 ────────────────────────────────────────────────────────
+  - industry: "Integrated Oil & Gas"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 8.0
+    midcycle_ebit_margin_pct_median: 14.0
+    midcycle_ebit_margin_pct_high: 20.0
+    peak_margin_caution_pct: 28.0   # 超过此值即进入"晚周期"区域
+    trough_margin_pct: 2.0
+    midcycle_brent_assumption_usd: 65   # 对应的正常化油价假设（示例）
+    commodity_regression_note: >
+      Exxon类：可建立 EBIT利润率 = α + β × Brent Oil Price 回归方程，
+      β 典型值约 0.35-0.45（即Brent每变动10美元，EBIT利润率变动约3.5-4.5pp）。
+      Mid-cycle 油价使用 IEA 长期均衡价格（约60-70美元/桶），非当期现货价格。
+    cycle_note: "必须披露周期窗口（年份区间）与中点取法（滚动均值 vs 完整周期均值）"
+
+  - industry: "Exploration & Production (E&P)"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 5.0
+    midcycle_ebit_margin_pct_median: 18.0
+    midcycle_ebit_margin_pct_high: 35.0
+    peak_margin_caution_pct: 45.0
+    trough_margin_pct: -8.0
+    midcycle_brent_assumption_usd: 65
+    commodity_regression_note: "E&P对油价杠杆更高，利润率波动区间远大于综合油企"
+
+  # ── 金属/矿业 ────────────────────────────────────────────────────
+  - industry: "Diversified Metals & Mining"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 12.0
+    midcycle_ebit_margin_pct_median: 20.0
+    midcycle_ebit_margin_pct_high: 30.0
+    peak_margin_caution_pct: 38.0
+    trough_margin_pct: 3.0
+    midcycle_commodity_note: "铜/铁矿石/锌综合；需按主要品种设立回归方程"
+    cycle_note: "铜周期约7-8年，铁矿石约5-7年；建议使用各自周期窗口"
+
+  - industry: "Steel (Integrated)"
+    cycle_window_years: 8
+    midcycle_ebit_margin_pct_low: 3.0
+    midcycle_ebit_margin_pct_median: 7.0
+    midcycle_ebit_margin_pct_high: 12.0
+    peak_margin_caution_pct: 18.0
+    trough_margin_pct: -2.0
+    commodity_regression_note: "EBIT对钢价β约0.25-0.35；需同时控制铁矿石成本端"
+
+  - industry: "Coal Mining"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 8.0
+    midcycle_ebit_margin_pct_median: 16.0
+    midcycle_ebit_margin_pct_high: 28.0
+    peak_margin_caution_pct: 35.0
+    trough_margin_pct: -3.0
+    structural_risk_note: >
+      注意：煤炭行业面临能源转型导致的永久性需求下移风险，
+      使用历史中周期利润率须额外加"结构性衰退折扣"（建议 2-4pp），
+      并明确标注"历史中值 vs 新均衡假设"的差异。
+
+  # ── 化工 ────────────────────────────────────────────────────────
+  - industry: "Commodity Chemicals"
+    cycle_window_years: 8
+    midcycle_ebit_margin_pct_low: 5.0
+    midcycle_ebit_margin_pct_median: 10.0
+    midcycle_ebit_margin_pct_high: 16.0
+    peak_margin_caution_pct: 22.0
+    trough_margin_pct: -1.0
+    cycle_note: "乙烯/化肥类；与油价/天然气价格高度相关"
+
+  # ── 航运 ────────────────────────────────────────────────────────
+  - industry: "Container Shipping"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 2.0
+    midcycle_ebit_margin_pct_median: 8.0
+    midcycle_ebit_margin_pct_high: 15.0
+    peak_margin_caution_pct: 35.0   # 2021-2022年疫情异常峰值，中远海控类
+    trough_margin_pct: -5.0
+    commodity_regression_note: >
+      集装箱运费（SCFI/BDI）与利润率高度正相关；
+      SCFI每变动100点对EBIT利润率影响约0.5-1pp（需按公司产能结构校准）。
+      必须区分"正常化运费"与"疫情超级周期运费"，后者不得用于长期DCF。
+    cycle_note: >
+      典型中远海控案例：2021-2022年EBIT利润率>40%（疫情异常峰值），
+      使用TTM数据做DCF将严重高估；2016-2019年中枢约7-10%为更合理的正常化基准。
+
+  - industry: "Dry Bulk Shipping"
+    cycle_window_years: 10
+    midcycle_ebit_margin_pct_low: 3.0
+    midcycle_ebit_margin_pct_median: 12.0
+    midcycle_ebit_margin_pct_high: 22.0
+    peak_margin_caution_pct: 30.0
+    trough_margin_pct: -8.0
+    cycle_note: "BDI为核心代理指标；波动极大，须特别谨慎"
+
+  # ── 汽车/工业 ───────────────────────────────────────────────────
+  - industry: "Automobile Manufacturing"
+    cycle_window_years: 8
+    midcycle_ebit_margin_pct_low: 3.0
+    midcycle_ebit_margin_pct_median: 6.5
+    midcycle_ebit_margin_pct_high: 10.0
+    peak_margin_caution_pct: 13.0
+    trough_margin_pct: -3.0
+    cycle_note: >
+      丰田类：使用「EBIT利润率 vs 全球汽车销量（百万辆）」回归，
+      剥离景气周期的短期波动；中周期利润率约6-7%为基准。
+      电动化转型正在重塑成本结构，需在DCF假设中体现转型成本。
+
+  # ── 建材/建筑 ──────────────────────────────────────────────────
+  - industry: "Construction Materials"
+    cycle_window_years: 8
+    midcycle_ebit_margin_pct_low: 7.0
+    midcycle_ebit_margin_pct_median: 13.0
+    midcycle_ebit_margin_pct_high: 20.0
+    peak_margin_caution_pct: 25.0
+    trough_margin_pct: 2.0
+    cycle_note: "与全球建设活动/基础设施投资高度正相关"
+
+  # ── 先进制造（注：V5.3 新增中周期参考）────────────────────────
+  - industry: "EV Battery Manufacturing"
+    cycle_window_years: 7
+    midcycle_ebit_margin_pct_low: 8.0
+    midcycle_ebit_margin_pct_median: 14.0
+    midcycle_ebit_margin_pct_high: 20.0
+    peak_margin_caution_pct: 25.0
+    trough_margin_pct: 1.0
+    cycle_note: >
+      注意：EV电池行业景气周期较短（约5-7年），正处于第一个完整周期末段（2025+）。
+      2022-2023年碳酸锂超级周期导致上游原材料成本骤升，毛利率被压缩；
+      建议使用 2018-2025年滚动均值，并标注"行业尚无完整周期数据，估算结论不确定性较高"。
+
+# ─────────────────────────────────────────────────────────────────
+# V5.3 使用规则（VR-04 强制执行指引）
+# ─────────────────────────────────────────────────────────────────
+v5_3_usage_rules:
+  mandatory_disclosure:
+    - "必须披露使用的周期窗口年份区间（如 2014-2024 年滚动10年均值）"
+    - "必须披露中点取法（算术均值 vs 调和均值）"
+    - "必须同时列示当前 TTM 利润率 与 正常化利润率的差异（单位 pp）"
+    - "若 TTM 利润率高于正常化利润率 > 10pp → 必须在估值中标注'景气顶部风险'"
+    - "若 TTM 利润率低于正常化利润率 > 10pp → 必须在估值中标注'景气低谷修复预期'"
+
+  forbidden:
+    - "[VR-04 硬规则] 周期股禁止使用 TTM 利润率直接做 DCF 终值假设"
+    - "不得使用单一年度（尤其是景气顶峰年）数据代替中周期均值"
+    - "不得在未披露周期窗口的情况下声称使用了'正常化利润率'"
+
+  structural_change_exception: >
+    当行业发生永久性结构变化（如煤炭需求因能源转型永久下移，或行业集中度大幅提升），
+    历史中周期均值可能失效。此时须使用"新均衡假设"并明确标注分析局限性。
+    建议悲观情景采用"历史中值 × (1 - 结构衰退折扣 20-30%)"。
+
+notes:
+  - "本表数值为示例占位，实际分析须从 Damodaran 网站获取最新行业利润率数据集。"
+  - "与 sales_to_capital_by_industry.yml 配合构建正常化 FCFF 模型。"
+  - "V5.3 Agent-9 在 CYCLICAL 模板下强制调用本表，并将结果记录到估值输出的 normalization_log 字段。"

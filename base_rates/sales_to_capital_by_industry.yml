@@ -1,0 +1,226 @@
+# schema:
+#   library: sales_to_capital_by_industry
+#   version: string
+#   description: string
+#   data_sources: list[string]
+#   last_updated: date
+#   usage_in_v5_3: string
+#   industries: list[{sector, sub_sector, sales_to_capital_ratio, notes}]
+
+# source: Damodaran Online — Industry-Level Data (Reinvestment & Capital Intensity)
+# last_updated: "2026-01"
+# usage_in_v5_3: >
+#   §10.5 Narrative Decomposition (SOTP) — 每条业务线独立设定销售资本比(Sales-to-Capital Ratio)。
+#   用于"无历史财报"或"高速增长"公司的再投资率(Reinvestment Rate)倒推，
+#   避免凭空猜测 CapEx，锚定行业基准。
+#   Agent-9 在执行 SOTP 时强制引用本表。
+# example_only: true
+
+library: sales_to_capital_by_industry
+version: "1.0"
+description: >
+  按行业分类的销售资本比（Sales-to-Capital Ratio，即每产生1美元新营收需投入的增量资本）。
+  计算公式：Sales-to-Capital = ΔRevenue / Reinvestment（含CapEx净额+营运资本变化）。
+  比值越高→资产轻（软件/平台），比值越低→资本密集（半导体/能源）。
+  主要用于 §10.5 SOTP 中对各业务线再投资率的基准锚定。
+
+data_sources:
+  - "Damodaran Online — Reinvestment Rates by Sector (Jan 2026)"
+  - "CS HOLT — Capital Productivity Database"
+  - "McKinsey Global Institute — Industry Productivity Studies"
+
+# ─────────────────────────────────────────────────────────────────
+# 行业销售资本比参考值（example_only: true）
+# ─────────────────────────────────────────────────────────────────
+industries:
+  # example_only: true — 数值为Damodaran数据库统计均值
+
+  # ── 技术/软件 ──────────────────────────────────────────────────
+  - sector: "Technology"
+    sub_sector: "Software (SaaS)"
+    sales_to_capital_low: 1.50
+    sales_to_capital_median: 2.20
+    sales_to_capital_high: 3.50
+    notes: "轻资产，主要再投资为研发和销售，CapEx极低"
+
+  - sector: "Technology"
+    sub_sector: "Software (Enterprise/Legacy)"
+    sales_to_capital_low: 1.20
+    sales_to_capital_median: 1.80
+    sales_to_capital_high: 2.80
+    notes: "比SaaS稍重，含较多基础设施维护"
+
+  - sector: "Technology"
+    sub_sector: "Internet Platform (双边市场)"
+    sales_to_capital_low: 1.80
+    sales_to_capital_median: 2.50
+    sales_to_capital_high: 4.00
+    notes: "平台模式边际成本极低，Starlink类卫星互联网需单独调低"
+
+  - sector: "Technology"
+    sub_sector: "Semiconductors (Fabless)"
+    sales_to_capital_low: 1.00
+    sales_to_capital_median: 1.50
+    sales_to_capital_high: 2.20
+    notes: "无晶圆代工，相对轻资产；但研发密集"
+
+  - sector: "Technology"
+    sub_sector: "Semiconductors (IDM/Foundry)"
+    sales_to_capital_low: 0.30
+    sales_to_capital_median: 0.55
+    sales_to_capital_high: 0.90
+    notes: "极度资本密集，台积电/英特尔类；每美元新营收需约1.8美元投资"
+
+  # ── 航天 / 国防 ─────────────────────────────────────────────────
+  - sector: "Aerospace & Defense"
+    sub_sector: "Launch Services (商业航天发射)"
+    sales_to_capital_low: 0.40
+    sales_to_capital_median: 0.65
+    sales_to_capital_high: 1.00
+    notes: "SpaceX猎鹰火箭类；火箭生产+地面设施资本密集，但可回收降低边际成本"
+
+  - sector: "Aerospace & Defense"
+    sub_sector: "Satellite Internet (Starlink类)"
+    sales_to_capital_low: 0.20
+    sales_to_capital_median: 0.40
+    sales_to_capital_high: 0.70
+    notes: "卫星星座初期建设阶段Sales/Capital极低；成熟后提升至0.6-1.0"
+
+  - sector: "Aerospace & Defense"
+    sub_sector: "Defense Systems (传统)"
+    sales_to_capital_low: 0.80
+    sales_to_capital_median: 1.20
+    sales_to_capital_high: 1.80
+    notes: "长合同可见度高；资本密集度中等"
+
+  # ── 能源 ────────────────────────────────────────────────────────
+  - sector: "Energy"
+    sub_sector: "Integrated Oil & Gas"
+    sales_to_capital_low: 0.40
+    sales_to_capital_median: 0.65
+    sales_to_capital_high: 0.95
+    notes: "Exxon/Chevron类；勘探+生产资本密集；成熟期Sales/Capital提升"
+
+  - sector: "Energy"
+    sub_sector: "Renewable Energy (Solar/Wind)"
+    sales_to_capital_low: 0.25
+    sales_to_capital_median: 0.45
+    sales_to_capital_high: 0.70
+    notes: "建设期Sales/Capital低，运营期提升；具体取决于电价合同"
+
+  - sector: "Energy"
+    sub_sector: "LNG / Pipeline"
+    sales_to_capital_low: 0.20
+    sales_to_capital_median: 0.35
+    sales_to_capital_high: 0.55
+    notes: "基础设施型，前期资本投入巨大，后期营收稳定"
+
+  # ── 先进制造 ────────────────────────────────────────────────────
+  - sector: "Advanced Manufacturing"
+    sub_sector: "EV Battery (动力电池)"
+    sales_to_capital_low: 0.35
+    sales_to_capital_median: 0.60
+    sales_to_capital_high: 0.90
+    notes: "CATL类；扩产期Sales/Capital偏低，成熟期偏高"
+
+  - sector: "Advanced Manufacturing"
+    sub_sector: "Solar PV (光伏组件)"
+    sales_to_capital_low: 0.45
+    sales_to_capital_median: 0.75
+    sales_to_capital_high: 1.10
+    notes: "组件价格下行压低Sales，但销量扩张；行业整合中"
+
+  - sector: "Advanced Manufacturing"
+    sub_sector: "Electric Vehicles (整车)"
+    sales_to_capital_low: 0.50
+    sales_to_capital_median: 0.85
+    sales_to_capital_high: 1.30
+    notes: "特斯拉类成熟后接近1.0；新进入者扩产期Sales/Capital低"
+
+  # ── 医疗/生物科技 ────────────────────────────────────────────────
+  - sector: "Healthcare"
+    sub_sector: "Pharma (Big Pharma)"
+    sales_to_capital_low: 0.70
+    sales_to_capital_median: 1.10
+    sales_to_capital_high: 1.60
+    notes: "含大量研发资本化调整后；Amgen类"
+
+  - sector: "Healthcare"
+    sub_sector: "Biotech (Early Stage)"
+    sales_to_capital_low: 0.10
+    sales_to_capital_median: 0.25
+    sales_to_capital_high: 0.50
+    notes: "早期无营收，大量研发支出；估值需用期权或蒙卡"
+
+  - sector: "Healthcare"
+    sub_sector: "MedTech / Devices"
+    sales_to_capital_low: 0.80
+    sales_to_capital_median: 1.20
+    sales_to_capital_high: 1.80
+    notes: "产品多样化，资本需求中等"
+
+  # ── 消费 ────────────────────────────────────────────────────────
+  - sector: "Consumer"
+    sub_sector: "Luxury Goods"
+    sales_to_capital_low: 1.20
+    sales_to_capital_median: 1.80
+    sales_to_capital_high: 2.80
+    notes: "品牌资产重，有形CapEx低；LVMH类"
+
+  - sector: "Consumer"
+    sub_sector: "Gaming (Casinos/Hospitality)"
+    sales_to_capital_low: 0.30
+    sales_to_capital_median: 0.55
+    sales_to_capital_high: 0.85
+    notes: "LVS类；物业资本密集，前期投入大"
+
+  - sector: "Consumer"
+    sub_sector: "E-Commerce"
+    sales_to_capital_low: 1.00
+    sales_to_capital_median: 1.50
+    sales_to_capital_high: 2.50
+    notes: "仓储+物流投入大，但规模效应明显"
+
+  # ── 金融 ────────────────────────────────────────────────────────
+  - sector: "Financials"
+    sub_sector: "Commercial Banking"
+    sales_to_capital_low: 0.08
+    sales_to_capital_median: 0.15
+    sales_to_capital_high: 0.25
+    notes: "金融杠杆使Sales/Capital极低；估值不适合直接使用本比率"
+
+  # ── 电信 ────────────────────────────────────────────────────────
+  - sector: "Telecom"
+    sub_sector: "Mobile Network Operator"
+    sales_to_capital_low: 0.35
+    sales_to_capital_median: 0.55
+    sales_to_capital_high: 0.85
+    notes: "网络基础设施投入重，5G周期资本需求高"
+
+  - sector: "Telecom"
+    sub_sector: "Satellite Broadband (成熟期)"
+    sales_to_capital_low: 0.45
+    sales_to_capital_median: 0.70
+    sales_to_capital_high: 1.10
+    notes: "星座建成后运营杠杆提升；对标Starlink稳态阶段"
+
+# ─────────────────────────────────────────────────────────────────
+# V5.3 SOTP 使用说明
+# ─────────────────────────────────────────────────────────────────
+v5_3_sotp_usage:
+  description: >
+    在 §10.5 Narrative Decomposition 中，对多业务线公司执行 SOTP 时，
+    每条业务线的再投资率按以下公式计算：
+      Reinvestment_Rate = Revenue_Growth / Sales_to_Capital
+    例：某业务线预期营收增长 20%，行业 Sales/Capital = 1.5
+      → Reinvestment_Rate = 20% / 1.5 = 13.3%
+      → FCFF = EBIT × (1-t) × (1 - 13.3%)
+  mandatory_note: >
+    [MANDATORY] 对无历史财务数据的独角兽/早期公司（如 SpaceX 类），
+    禁止凭空猜测 CapEx，必须从本表对应行业的 Sales/Capital 中值出发，
+    结合公司特有因素（规模化程度、技术领先性）做 ±20% 调整。
+
+notes:
+  - "本表数值为 Damodaran 行业数据统计均值，实际分析须根据公司具体情况调整。"
+  - "初创/早期公司在建设阶段 Sales/Capital 往往显著低于成熟均值，需在 SOTP 中分阶段设定。"
+  - "与 cyclical_midcycle_margins.yml 配合，可完整构建正常化 FCFF 模型。"
