@@ -1,3 +1,33 @@
+## [V5.4] — Edge-Driven (spec) (2026-05-05)
+
+### DOCTRINE-001 Compliance
+
+This version is compliant with [`doctrine/DOCTRINE-001-Edge-over-Logic.md`](doctrine/DOCTRINE-001-Edge-over-Logic.md). All 8 patches below are derived directly from DOCTRINE-001's five root propositions (P1–P5), the Human/Machine Charter (§2), the Output Contract (§3), and the WAIT default (§4).
+
+### New Files
+
+- `VIAIOS-P-V5.4-Edge-Driven.md` — Incremental spec on top of V5.3 (this is the change document; read V5.3 first).
+- `edge_registry/README.md` — Schema documentation for the Information Edge Registry (Patch 6).
+
+### 8 Patches (incremental amendments to V5.3)
+
+| # | Patch Name | Doctrine Proposition | V5.3 Module Affected |
+|---|---|---|---|
+| 1 | Alpha Source Tagging | P2 — Edge over Analysis | §9 Final Output; Agent-6; Agent-7 |
+| 2 | 30-Name Active Conviction Pool Cap | P5 — Concentration and Patience | §4 Intent Router; Agent-5 |
+| 3 | IgnitionScanner Agent | P4 — Industries Ignite Discretely | New agent (no V5.3 equivalent) |
+| 4 | Reinvestment Regime Shift Alarm | P3 — Cheap is not Safe | Agent-9; §11.5 Monte Carlo; §12.3 Distress-Adjusted |
+| 5 | Verification Checkpoint Ledger | P1, P3 | §9 Final Output; Agent-7 |
+| 6 | Information Edge Registry | P2 — Edge over Analysis | Agent-6; Agent-7; new `edge_registry/` dir |
+| 7 | Patience Premium / Idle Cash Legitimization | P5, WAIT Default | §9 Final Output; Agent-7; §4 MODE_PORTFOLIO_MONITOR |
+| 8 | AI vs Human Boundary Charter | §2 Human/Machine Charter | Agent-2; Agent-7 (runtime enforcement) |
+
+### V5.3 Status
+
+V5.3 (`VIAIOS-P-V5.3-Damodaran-Calibrated.md`) is **frozen**. This release does not modify it. All V5.3 modules, agents, hard rules (VR-01–VR-05), and base_rates files remain unchanged. V5.4 is additive only.
+
+---
+
 ## V5.3-Damodaran-Calibrated (2026-04-28)
 
 ### 新增文件
